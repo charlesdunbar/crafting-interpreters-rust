@@ -1,17 +1,18 @@
 use crate::token_type::TokenType;
+use std::any::Any;
 use std::fmt;
 
 #[allow(dead_code)]
-struct Token<T> {
+pub struct Token {
     l_type: TokenType,
     lexeme: String,
-    literal: T,
+    literal: Box<dyn Any>,
     line: u64,
 }
 
 #[allow(dead_code)]
-impl<T> Token<T> {
-    pub fn new(l_type: TokenType, lexeme: String, literal: T, line: u64) -> Self {
+impl Token {
+    pub fn new(l_type: TokenType, lexeme: String, literal: dyn Any, line: u64) -> Self {
         Token {
             l_type,
             lexeme,
@@ -21,10 +22,7 @@ impl<T> Token<T> {
     }
 }
 
-impl<T> fmt::Display for Token<T>
-where
-    T: fmt::Display,
-{
+impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?} {} {}", self.l_type, self.lexeme, self.literal)
     }
