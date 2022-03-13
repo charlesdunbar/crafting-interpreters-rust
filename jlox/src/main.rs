@@ -1,7 +1,10 @@
+mod token;
+mod token_type;
+
 use std::{env, fs, io, io::Write};
 
 fn main() {
-    let lox = Lox { hadError: false };
+    let mut lox = Lox { had_error: false };
     let args: Vec<String> = env::args().collect();
 
     //print!("{}", args.len());
@@ -16,20 +19,20 @@ fn main() {
 }
 
 struct Lox {
-    hadError: bool,
+    had_error: bool,
 }
 
 impl Lox {
     fn run_file(&self, cmd: &str) {
         let source = fs::read_to_string(cmd).expect("Got an error reading file");
-        let result = self.run(&source).expect("Error!");
+        self.run(&source).expect("Error!");
         // Exit on errors
-        if !result {
+        if self.had_error {
             std::process::exit(65);
         }
     }
 
-    fn run_prompt(&self) {
+    fn run_prompt(&mut self) {
         loop {
             print!("> ");
             io::stdout().flush().unwrap();
@@ -45,6 +48,7 @@ impl Lox {
             }
             print!("{}", input);
             self.run(&input).unwrap();
+            self.had_error = false;
         }
     }
 
