@@ -12,7 +12,7 @@ pub struct Token {
 
 #[allow(dead_code)]
 impl Token {
-    pub fn new(l_type: TokenType, lexeme: String, literal: dyn Any, line: u64) -> Self {
+    pub fn new(l_type: TokenType, lexeme: String, literal: Box<dyn Any>, line: u64) -> Self {
         Token {
             l_type,
             lexeme,
@@ -24,6 +24,6 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} {} {}", self.l_type, self.lexeme, self.literal)
+        write!(f, "{:?} {} {:?}", self.l_type, self.lexeme, self.literal)
     }
 }
