@@ -1,7 +1,10 @@
+mod scanner;
 mod token;
 mod token_type;
-mod scanner;
 
+use token::Token;
+
+use crate::scanner::Scanner;
 use std::{env, fs, io, io::Write};
 
 fn main() {
@@ -54,6 +57,12 @@ impl Lox {
     }
 
     fn run(&self, source: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut scanner = Scanner::new(source.to_string());
+        let tokens: &Vec<Token> = scanner.scan_tokens();
+        // for token in tokens, println token
+        for token in tokens {
+            println!("{}", token)
+        }
         Ok(true)
     }
 }

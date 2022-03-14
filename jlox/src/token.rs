@@ -6,14 +6,14 @@ use std::fmt;
 pub struct Token {
     l_type: TokenType,
     lexeme: String,
-    literal: Box<dyn Any>,
-    line: u64,
+    literal: Option<Box<dyn Any>>,
+    line: usize,
 }
 
 #[allow(dead_code)]
 impl Token {
-    pub fn new(l_type: TokenType, lexeme: String, literal: Box<dyn Any>, line: u64) -> Self {
-        Token {
+    pub fn new(l_type: TokenType, lexeme: String, literal: Option<Box<dyn Any>>, line: usize) -> Self {
+        Self {
             l_type,
             lexeme,
             literal,
@@ -23,7 +23,7 @@ impl Token {
 }
 
 impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?} {} {:?}", self.l_type, self.lexeme, self.literal)
     }
 }
