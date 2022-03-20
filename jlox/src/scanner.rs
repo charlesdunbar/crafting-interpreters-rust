@@ -96,9 +96,7 @@ impl Scanner {
     }
 
     fn match_char(&mut self, expected: char) -> bool {
-        if self.is_at_end() {
-            false
-        } else if self.source.chars().nth(self.current).unwrap() != expected {
+        if self.is_at_end() || self.source.chars().nth(self.current).unwrap() != expected {
             false
         } else {
             self.current += 1;
