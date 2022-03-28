@@ -38,6 +38,6 @@ impl fmt::Display for Token {
         //     Some => self.literal.unwrap(),
         //     None => None
         // };
-        write!(f, "{:?} {:?} {:#?}", self.l_type, self.lexeme, self.literal)
+        write!(f, "{:?} {:?} {:#?}", self.l_type, self.lexeme, self.literal.as_ref().unwrap())
     }
 }
