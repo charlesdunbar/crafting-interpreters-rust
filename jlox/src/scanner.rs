@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::lox::Lox;
 use crate::token::Token;
 use crate::token::ValidTokens;
@@ -8,6 +10,7 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: usize,
+    keywords: HashMap<String, TokenType>,
 }
 
 impl Scanner {
@@ -18,6 +21,24 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
+            keywords: HashMap::from([
+                (String::from("and"), AND),
+                (String::from("class"), CLASS),
+                (String::from("else"), ELSE),
+                (String::from("false"), FALSE),
+                (String::from("for"), FOR),
+                (String::from("fun"), FUN),
+                (String::from("if"), IF),
+                (String::from("nil"), NIL),
+                (String::from("or"), OR),
+                (String::from("print"), PRINT),
+                (String::from("return"), RETURN),
+                (String::from("super"), SUPER),
+                (String::from("this"), THIS),
+                (String::from("true"), TRUE),
+                (String::from("var"), VAR),
+                (String::from("while"), WHILE),
+            ]),
         }
     }
 
@@ -88,11 +109,26 @@ impl Scanner {
             _ => {
                 if self.is_digit(c) {
                     self.number()
+                } else if self.is_alpha(c) {
+                    self.identifier()
                 } else {
                     l.error(self.line, "Unexpected character.")
                 }
             }
         }
+    }
+
+    fn identifier(&mut self) {
+        while self.is_alpha_numeric(self.peek()) {
+            self.advance();
+        }
+        let text = self.source[self.start..self.current].to_string();
+        let result = self.keywords.get_mut(&text).cloned();
+        let l_type = match result {
+            Some(keyword) => keyword,
+            None => IDENTIFIER,
+        };
+        self.add_token(l_type, None)
     }
 
     fn number(&mut self) {
@@ -175,6 +211,14 @@ impl Scanner {
             return '\0';
         }
         self.source.chars().nth(self.current + 1).unwrap()
+    }
+
+    fn is_alpha(&self, c: char) -> bool {
+        (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+    }
+
+    fn is_alpha_numeric(&self, c: char) -> bool {
+        self.is_alpha(c) || self.is_digit(c)
     }
 
     fn is_digit(&self, c: char) -> bool {

@@ -1,7 +1,7 @@
 #[allow(non_camel_case_types)]
 #[allow(dead_code)]
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum TokenType {
     // Single character tokens.
     LEFT_PAREN,
