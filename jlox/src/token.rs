@@ -8,6 +8,12 @@ pub enum ValidTokens {
     String(String),
 }
 
+impl fmt::Display for ValidTokens {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 pub struct Token {
     l_type: TokenType,
     lexeme: String,
@@ -33,11 +39,20 @@ impl Token {
 }
 
 impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // let lit = match self.literal {
-        //     Some => self.literal.unwrap(),
-        //     None => None
-        // };
-        write!(f, "{:?} {:?} {:#?}", self.l_type, self.lexeme, self.literal.as_ref().unwrap())
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {       
+        write!(
+            f,
+            "{:?} {:?} {}",
+            self.l_type,
+            self.lexeme,
+            match self.literal.as_ref() {
+                Some(a) => {
+                    a.to_string()
+                }
+                None => {
+                    "None".to_string()
+                }
+            }
+        )
     }
 }
