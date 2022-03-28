@@ -99,6 +99,8 @@ impl Scanner {
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
                     }
+                } else if self.match_char('*') {
+                    self.multiline(l);
                 } else {
                     self.add_token(SLASH, None)
                 }
@@ -123,7 +125,7 @@ impl Scanner {
             self.advance();
         }
         let text = self.source[self.start..self.current].to_string();
-        let result = self.keywords.get_mut(&text).cloned();
+        let result = self.keywords.get(&text).cloned();
         let l_type = match result {
             Some(keyword) => keyword,
             None => IDENTIFIER,
@@ -157,7 +159,7 @@ impl Scanner {
     }
 
     fn string(&mut self, l: &Lox) {
-        while self.peek() != '"' && self.is_at_end() {
+        while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1
             }
@@ -172,6 +174,21 @@ impl Scanner {
         // Trim the surrounding quotes
         let value = self.source[self.start + 1..self.current - 1].to_string();
         self.add_token(STRING, Some(Box::new(ValidTokens::String(value))));
+    }
+
+    fn multiline(&mut self, l: &Lox) {
+        while !(self.is_at_end() || self.peek() == '*' && self.peek_next() == '/') {
+            if self.peek() == '\n' {
+                self.line += 1
+            }
+            self.advance();
+        }
+        if self.is_at_end() {
+            l.error(self.line, "Unterminated multiline comment.")
+        }
+
+        self.advance(); // The closing *.
+        self.advance(); // The closing /.
     }
 
     fn is_at_end(&self) -> bool {
