@@ -1,7 +1,6 @@
-use std::any::Any;
-
 use crate::lox::Lox;
 use crate::token::Token;
+use crate::token::ValidTokens;
 use crate::token_type::TokenType::{self, *};
 pub struct Scanner {
     source: String,
@@ -74,9 +73,69 @@ impl Scanner {
                     self.add_token(GREATER, None)
                 }
             }
+            '/' => {
+                if self.match_char('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else {
+                    self.add_token(SLASH, None)
+                }
+            }
+            ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
-            _ => l.error(self.line, "Unexpected character."),
+            '"' => self.string(l),
+            _ => {
+                if self.is_digit(c) {
+                    self.number()
+                } else {
+                    l.error(self.line, "Unexpected character.")
+                }
+            }
         }
+    }
+
+    fn number(&mut self) {
+        while self.is_digit(self.peek()) {
+            self.advance();
+        }
+
+        // Look for a fractional part.
+        if self.peek() == '.' && self.is_digit(self.peek_next()) {
+            // Consume the '.'
+            self.advance();
+
+            while self.is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+
+        self.add_token(
+            NUMBER,
+            Some(Box::new(ValidTokens::Float(
+                self.source[self.start..self.current]
+                    .parse::<f64>()
+                    .unwrap(),
+            ))),
+        )
+    }
+
+    fn string(&mut self, l: &Lox) {
+        while self.peek() != '"' && self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1
+            }
+            self.advance();
+        }
+        if self.is_at_end() {
+            l.error(self.line, "Unterminated string.")
+        }
+
+        self.advance(); // The closing ".
+
+        // Trim the surrounding quotes
+        let value = self.source[self.start + 1..self.current - 1].to_string();
+        self.add_token(STRING, Some(Box::new(ValidTokens::String(value))));
     }
 
     fn is_at_end(&self) -> bool {
@@ -89,7 +148,7 @@ impl Scanner {
         c
     }
 
-    fn add_token(&mut self, l_type: TokenType, literal: Option<Box<dyn Any>>) {
+    fn add_token(&mut self, l_type: TokenType, literal: Option<Box<ValidTokens>>) {
         let text = &self.source[self.start..self.current];
         self.tokens
             .push(Token::new(l_type, text.to_string(), literal, self.line));
@@ -102,5 +161,23 @@ impl Scanner {
             self.current += 1;
             true
         }
+    }
+
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+        self.source.chars().nth(self.current).unwrap()
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            return '\0';
+        }
+        self.source.chars().nth(self.current + 1).unwrap()
+    }
+
+    fn is_digit(&self, c: char) -> bool {
+        c >= '0' && c <= '9'
     }
 }
